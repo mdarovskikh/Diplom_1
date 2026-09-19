@@ -11,6 +11,7 @@ import java.util.Collection;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
+import static org.mockito.Mockito.mock;
 
 
 @RunWith(Parameterized.class)
@@ -91,6 +92,25 @@ public class BurgerTest {
         burger.addIngredient(sauce);
         burger.removeIngredient(5);
     }
+
+    /*
+     * Проверяет перемещение ингредиента на другую позицию
+     */
+    @Test
+    public void moveIngredientShouldMoveIngredientToNewIndex() {
+        Ingredient first = mock(Ingredient.class);
+        Ingredient second = mock(Ingredient.class);
+        Ingredient third = mock(Ingredient.class);
+
+        burger.addIngredient(first);
+        burger.addIngredient(second);
+        burger.addIngredient(third);
+
+        burger.moveIngredient(0, 2);
+
+        assertEquals(Arrays.asList(second, third, first), burger.ingredients);
+    }
+
 
 
 }
