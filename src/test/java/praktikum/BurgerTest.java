@@ -83,5 +83,14 @@ public class BurgerTest {
         assertEquals(1, burger.ingredients.size());
         assertSame(filling, burger.ingredients.get(0));
     }
+    /*
+     * Проверяет удаление ингредиента по несуществующему индексу
+     */
+    @Test(expected = IndexOutOfBoundsException.class)
+    public void removeIngredientWithInvalidIndexShouldThrowException() {
+        burger.addIngredient(sauce);
+        burger.removeIngredient(5);
+    }
+
 
 }
