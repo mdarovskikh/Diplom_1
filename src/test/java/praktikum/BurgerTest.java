@@ -12,6 +12,7 @@ import java.util.Collection;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 
 @RunWith(Parameterized.class)
@@ -111,6 +112,31 @@ public class BurgerTest {
         assertEquals(Arrays.asList(second, third, first), burger.ingredients);
     }
 
+
+    /*
+     * Проверяет перемещение ингредиента на несуществующую позицию
+     */
+    @Test(expected = IndexOutOfBoundsException.class)
+    public void moveIngredientWithInvalidIndexShouldThrowException() {
+        burger.addIngredient(sauce);
+        burger.moveIngredient(0, 5);
+    }
+
+    /*
+     * Параметризованный тест расчёта цены
+     */
+    @Test
+    public void getPriceShouldCalculateCorrectTotal() {
+        when(bun.getPrice()).thenReturn(bunPrice);
+        when(sauce.getPrice()).thenReturn(saucePrice);
+        when(filling.getPrice()).thenReturn(fillingPrice);
+
+        burger.setBuns(bun);
+        burger.addIngredient(sauce);
+        burger.addIngredient(filling);
+
+        assertEquals(expectedPrice, burger.getPrice(), 0.001f);
+    }
 
 
 }
