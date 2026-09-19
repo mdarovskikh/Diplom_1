@@ -43,7 +43,7 @@ public class BurgerTest {
     @Parameterized.Parameters
     public static Collection<Object[]> data() {
         return Arrays.asList(new Object[][]{
-                {100f, 50f, 70f, 300f},
+                {100f, 50f, 70f, 320f},
                 {0f, 0f, 0f, 0f},
                 {200f, 100f, 0f, 500f}
         });
@@ -51,7 +51,7 @@ public class BurgerTest {
 
     @Before
     public void setUp() {
-        org.mockito.MockitoAnnotations.initMocks(this);
+        org.mockito.MockitoAnnotations.openMocks(this); // org.mockito.MockitoAnnotations.initMocks(this) - устаревшее
         burger = new Burger();
     }
 
@@ -159,6 +159,7 @@ public class BurgerTest {
         burger.setBuns(bun);
 
         String expected = String.format("(==== %s ====)%n", "black bun")
+                + String.format("(==== %s ====)%n", "black bun")
                 + String.format("%nPrice: %f%n", 200f);
 
         String actualReceipt = burger.getReceipt();
@@ -168,6 +169,31 @@ public class BurgerTest {
         assertFalse(actualReceipt.contains("= filling"));
     }
 
+    /*
+     * Проверяет формирование чека с ингредиентами
+     */
+    @Test
+    public void getReceiptWithIngredientsShouldReturnFullReceipt() {
+        when(bun.getName()).thenReturn("black bun");
+        when(bun.getPrice()).thenReturn(100f);
 
+        when(sauce.getType()).thenReturn(IngredientType.SAUCE);
+        when(sauce.getName()).thenReturn("hot sauce");
+        when(sauce.getPrice()).thenReturn(50f);
 
+        when(filling.getType()).thenReturn(IngredientType.FILLING);
+        when(filling.getName()).thenReturn("cutlet");
+        when(filling.getPrice()).thenReturn(70f);
+
+        burger.setBuns(bun);
+        burger.addIngredient(sauce);
+        burger.addIngredient(filling);
+
+        String expected = String.format("(==== %s ====)%n", "black bun")
+                + String.format("= %s %s =%n", "sauce", "hot sauce")
+                + String.format("= %s %s =%n", "filling", "cutlet")
+                + String.format("(==== %s ====)%n", "black bun")
+                + String.format("%nPrice: %f%n", 320f);
+        assertEquals(expected, burger.getReceipt());
+    }
 }
