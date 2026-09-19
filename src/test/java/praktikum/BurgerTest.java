@@ -9,8 +9,8 @@ import org.mockito.Mock;
 import java.util.Arrays;
 import java.util.Collection;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertSame;
+import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -137,6 +137,37 @@ public class BurgerTest {
 
         assertEquals(expectedPrice, burger.getPrice(), 0.001f);
     }
+
+    /*
+     * Проверяет расчёт цены бургера без ингредиентов
+     */
+    @Test
+    public void getPriceWithoutIngredientsShouldReturnDoubleBunPrice() {
+        when(bun.getPrice()).thenReturn(100f);
+        burger.setBuns(bun);
+        assertEquals(200f, burger.getPrice(), 0.001f);
+    }
+
+    /*
+     * Проверяет формирование чека без ингредиентов
+     */
+    @Test
+    public void getReceiptWithoutIngredientsShouldReturnReceiptWithBunOnly() {
+        when(bun.getName()).thenReturn("black bun");
+        when(bun.getPrice()).thenReturn(100f);
+
+        burger.setBuns(bun);
+
+        String expected = String.format("(==== %s ====)%n", "black bun")
+                + String.format("%nPrice: %f%n", 200f);
+
+        String actualReceipt = burger.getReceipt();
+
+        assertEquals(expected, burger.getReceipt());
+        assertFalse(actualReceipt.contains("= sauce"));
+        assertFalse(actualReceipt.contains("= filling"));
+    }
+
 
 
 }
