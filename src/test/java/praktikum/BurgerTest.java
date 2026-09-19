@@ -72,5 +72,16 @@ public class BurgerTest {
         assertSame(sauce, burger.ingredients.get(0));
     }
 
+    /*
+     * Проверяет удаление ингредиента по индексу
+     */
+    @Test
+    public void removeIngredientShouldRemoveIngredientByIndex() {
+        burger.addIngredient(sauce);
+        burger.addIngredient(filling);
+        burger.removeIngredient(0);
+        assertEquals(1, burger.ingredients.size());
+        assertSame(filling, burger.ingredients.get(0));
+    }
 
 }
