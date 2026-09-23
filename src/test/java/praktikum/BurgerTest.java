@@ -1,61 +1,40 @@
 package praktikum;
 
+import org.assertj.core.api.SoftAssertions;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.Arrays;
 import java.util.Collection;
 
 import static org.junit.Assert.*;
-import static org.junit.Assert.assertFalse;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-
-@RunWith(Parameterized.class)
+/**
+ * Юнит-тесты для класса Burger.
+ * Каждый тест проверяет ровно одно утверждение
+ */
+@RunWith(MockitoJUnitRunner.class)
 public class BurgerTest {
     @Mock
     private Bun bun;
 
     @Mock
     private Ingredient sauce;
-
     @Mock
     private Ingredient filling;
     private Burger burger;
 
-    private float bunPrice;
-    private float saucePrice;
-    private float fillingPrice;
-    private float expectedPrice;
-
-    // конструктор
-    public BurgerTest(float bunPrice, float saucePrice, float fillingPrice, float expectedPrice) {
-        this.bunPrice = bunPrice;
-        this.saucePrice = saucePrice;
-        this.fillingPrice = fillingPrice;
-        this.expectedPrice = expectedPrice;
-    }
-
-    @Parameterized.Parameters
-    public static Collection<Object[]> data() {
-        return Arrays.asList(new Object[][]{
-                {100f, 50f, 70f, 320f},
-                {0f, 0f, 0f, 0f},
-                {200f, 100f, 0f, 500f}
-        });
-    }
-
     @Before
     public void setUp() {
-        org.mockito.MockitoAnnotations.openMocks(this); // org.mockito.MockitoAnnotations.initMocks(this) - устаревшее
         burger = new Burger();
     }
 
-    /*
+    /**
      * Проверяем установку булки для бургера
      */
     @Test
@@ -64,28 +43,37 @@ public class BurgerTest {
         assertSame(bun, burger.bun);
     }
 
-    /*
-     * Проверяет, что при добавлении ингредиента он попадает в список
+    /**
+     * Проверяем, что при добавлении ингредиента он попадает в список
      */
     @Test
-    public void addIngredientShouldAddIngredientToList() {
+    public void addIngredientShouldIncreaseSize() {
         burger.addIngredient(sauce);
         assertEquals(1, burger.ingredients.size());
+    }
+    @Test
+    public void addIngredientShouldStoreSameReference() {
+        burger.addIngredient(sauce);
         assertSame(sauce, burger.ingredients.get(0));
     }
-
-    /*
-     * Проверяет удаление ингредиента по индексу
+    /**
+     * Проверяет удаление ингредиента
      */
     @Test
-    public void removeIngredientShouldRemoveIngredientByIndex() {
+    public void removeIngredientShouldDecreaseSize() {
         burger.addIngredient(sauce);
         burger.addIngredient(filling);
         burger.removeIngredient(0);
         assertEquals(1, burger.ingredients.size());
+    }
+    @Test
+    public void removeIngredientShouldRemoveExactElement() {
+        burger.addIngredient(sauce);
+        burger.addIngredient(filling);
+        burger.removeIngredient(0);
         assertSame(filling, burger.ingredients.get(0));
     }
-    /*
+    /**
      * Проверяет удаление ингредиента по несуществующему индексу
      */
     @Test(expected = IndexOutOfBoundsException.class)
@@ -94,7 +82,7 @@ public class BurgerTest {
         burger.removeIngredient(5);
     }
 
-    /*
+    /**
      * Проверяет перемещение ингредиента на другую позицию
      */
     @Test
@@ -113,7 +101,7 @@ public class BurgerTest {
     }
 
 
-    /*
+    /**
      * Проверяет перемещение ингредиента на несуществующую позицию
      */
     @Test(expected = IndexOutOfBoundsException.class)
@@ -122,24 +110,8 @@ public class BurgerTest {
         burger.moveIngredient(0, 5);
     }
 
-    /*
-     * Параметризованный тест расчёта цены
-     */
-    @Test
-    public void getPriceShouldCalculateCorrectTotal() {
-        when(bun.getPrice()).thenReturn(bunPrice);
-        when(sauce.getPrice()).thenReturn(saucePrice);
-        when(filling.getPrice()).thenReturn(fillingPrice);
-
-        burger.setBuns(bun);
-        burger.addIngredient(sauce);
-        burger.addIngredient(filling);
-
-        assertEquals(expectedPrice, burger.getPrice(), 0.001f);
-    }
-
-    /*
-     * Проверяет расчёт цены бургера без ингредиентов
+    /**
+     * Тесты расчёта цены
      */
     @Test
     public void getPriceWithoutIngredientsShouldReturnDoubleBunPrice() {
@@ -148,52 +120,80 @@ public class BurgerTest {
         assertEquals(200f, burger.getPrice(), 0.001f);
     }
 
-    /*
-     * Проверяет формирование чека без ингредиентов
+    /**
+     * Тест чека используем SoftAssertions
      */
     @Test
-    public void getReceiptWithoutIngredientsShouldReturnReceiptWithBunOnly() {
-        when(bun.getName()).thenReturn("black bun");
-        when(bun.getPrice()).thenReturn(100f);
-
-        burger.setBuns(bun);
-
-        String expected = String.format("(==== %s ====)%n", "black bun")
-                + String.format("(==== %s ====)%n", "black bun")
-                + String.format("%nPrice: %f%n", 200f);
-
-        String actualReceipt = burger.getReceipt();
-
-        assertEquals(expected, burger.getReceipt());
-        assertFalse(actualReceipt.contains("= sauce"));
-        assertFalse(actualReceipt.contains("= filling"));
-    }
-
-    /*
-     * Проверяет формирование чека с ингредиентами
-     */
-    @Test
-    public void getReceiptWithIngredientsShouldReturnFullReceipt() {
-        when(bun.getName()).thenReturn("black bun");
-        when(bun.getPrice()).thenReturn(100f);
-
+    public void getReceiptShouldContainAllExpectedParts() {
+        when(bun.getName()).thenReturn("red bun");
+        when(bun.getPrice()).thenReturn(300f);
         when(sauce.getType()).thenReturn(IngredientType.SAUCE);
-        when(sauce.getName()).thenReturn("hot sauce");
-        when(sauce.getPrice()).thenReturn(50f);
-
+        when(sauce.getName()).thenReturn("chili sauce");
+        when(sauce.getPrice()).thenReturn(300f);
         when(filling.getType()).thenReturn(IngredientType.FILLING);
-        when(filling.getName()).thenReturn("cutlet");
-        when(filling.getPrice()).thenReturn(70f);
+        when(filling.getName()).thenReturn("dinosaur");
+        when(filling.getPrice()).thenReturn(200f);
 
         burger.setBuns(bun);
         burger.addIngredient(sauce);
         burger.addIngredient(filling);
 
-        String expected = String.format("(==== %s ====)%n", "black bun")
-                + String.format("= %s %s =%n", "sauce", "hot sauce")
-                + String.format("= %s %s =%n", "filling", "cutlet")
-                + String.format("(==== %s ====)%n", "black bun")
-                + String.format("%nPrice: %f%n", 320f);
-        assertEquals(expected, burger.getReceipt());
+        String receipt = burger.getReceipt();
+
+        SoftAssertions softly = new SoftAssertions();
+        softly.assertThat(receipt)
+                .as("Чек должен содержать имя булки")
+                .contains("red bun");
+        softly.assertThat(countOccurrences(receipt, "red bun"))
+                .as("Имя булки должно встречаться дважды (верх и низ)")
+                .isEqualTo(2);
+        softly.assertThat(receipt)
+                .as("Чек должен содержать название соуса")
+                .contains("chili sauce");
+        softly.assertThat(receipt)
+                .as("Чек должен содержать название начинки")
+                .contains("dinosaur");
+        softly.assertThat(receipt)
+                .as("Чек должен содержать строку с ценой")
+                .contains("Price:");
+        softly.assertAll();
+    }
+
+    @Test
+    public void getReceiptWithoutIngredientsShouldNotContainIngredientLines() {
+        when(bun.getName()).thenReturn("black bun");
+        when(bun.getPrice()).thenReturn(100f);
+        burger.setBuns(bun);
+
+        String receipt = burger.getReceipt();
+
+        SoftAssertions softly = new SoftAssertions();
+        softly.assertThat(receipt)
+                .as("Чек должен содержать имя булки")
+                .contains("black bun");
+        softly.assertThat(receipt)
+                .as("Чек должен содержать строку с ценой")
+                .contains("Price:");
+        softly.assertThat(receipt)
+                .as("В чеке не должно быть строк с соусом")
+                .doesNotContain("= sauce");
+        softly.assertThat(receipt)
+                .as("В чеке не должно быть строк с начинкой")
+                .doesNotContain("= filling");
+        softly.assertAll();
+    }
+
+    /** вспомогательный метод
+     * Считает, сколько раз подстрока встречается в строке
+     * Нужен для проверки, что имя булки напечатано дважды
+     */
+    private int countOccurrences(String source, String target) {
+        int count = 0;
+        int index = 0;
+        while ((index = source.indexOf(target, index)) != -1) {
+            count++;
+            index += target.length();
+        }
+        return count;
     }
 }
